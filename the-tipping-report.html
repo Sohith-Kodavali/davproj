@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tipping Report</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #faf9f6;
+    --bg-warm: #f5f3ee;
+    --card: #ffffff;
+    --card-hover: #ffffff;
+    --card-border: rgba(0,0,0,0.06);
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+    --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.06), 0 20px 48px rgba(0,0,0,0.10);
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a4a4a;
+    --text-muted: #8a8a8a;
+    --accent-blue: #2563eb;
+    --accent-orange: #ea580c;
+    --accent-gold: #b8860b;
+    --accent-gold-light: rgba(184,134,11,0.08);
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent-blue); color: #fff; }
+
+  .page {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding: 0.6vh 1.8vw 0.5vh;
+    gap: 0;
+  }
+
+  /* ---------- Grid ---------- */
+  .grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 1vw;
+    min-height: 0;
+  }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    padding: 1.4vh 1.3vw 1vh;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s cubic-bezier(0.22,1,0.36,1),
+                box-shadow 0.25s cubic-bezier(0.22,1,0.36,1);
+    overflow: hidden;
+    position: relative;
+  }
+  @media (hover: hover) {
+    .card:hover {
+      transform: translateY(-4px) scale(1.005);
+      box-shadow: var(--card-shadow-hover);
+    }
+    .card:hover .card-arrow { opacity: 1; transform: translateX(0); }
+  }
+  .card:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent-blue), #4f8ff7);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-title {
+    font-family: var(--font-display);
+    font-size: clamp(15px, 1.2vw, 20px);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.65vw, 12px);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.04);
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .chart-slot {
+    flex: 1;
+    min-height: 0;
+    margin: 0.4vh 0;
+  }
+  .chart-slot svg { display: block; width: 100%; height: 100%; }
+
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding-top: 0.3vh;
+    border-top: 1px solid rgba(0,0,0,0.04);
+  }
+  .card-caption {
+    font-size: clamp(12px, 0.85vw, 14px);
+    color: var(--text-secondary);
+    line-height: 1.35;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+  .card-arrow {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  /* ---------- Insights card ---------- */
+  .insights-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: var(--radius);
+    padding: 1.4vh 1.3vw;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 12px 32px rgba(0,0,0,0.15);
+  }
+  .insights-card h3 {
+    font-family: var(--font-display);
+    font-size: clamp(16px, 1.3vw, 22px);
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1vh;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .insights-card h3::before {
+    content: "";
+    width: 3px;
+    height: 16px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--accent-gold), var(--accent-orange));
+  }
+  .insights-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8vh;
+    overflow: auto;
+    flex: 1;
+  }
+  .insights-list li {
+    font-size: clamp(12px, 0.85vw, 15px);
+    line-height: 1.4;
+    color: rgba(255,255,255,0.75);
+    padding-left: 16px;
+    position: relative;
+  }
+  .insights-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+  }
+  .insights-list strong {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* ---------- Fun Facts button ---------- */
+  .fun-facts-btn {
+    position: fixed;
+    bottom: 1.5vh;
+    right: 1.5vw;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px;
+    padding: 10px 22px 10px 16px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: clamp(12px, 0.85vw, 15px);
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 50;
+  }
+  .fun-facts-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+  .fun-facts-btn svg { flex-shrink: 0; }
+
+  /* Fun Facts overlay */
+  .ff-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .ff-overlay.open { opacity: 1; pointer-events: auto; }
+  .ff-modal {
+    width: min(680px, 90vw);
+    max-height: 88vh;
+    overflow: auto;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 20px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.30);
+    padding: 3vh 2.5vw 2.5vh;
+    position: relative;
+    transform: scale(0.92) translateY(10px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease;
+  }
+  .ff-overlay.open .ff-modal { transform: scale(1) translateY(0); opacity: 1; }
+  .ff-modal-close {
+    position: absolute;
+    top: 1.2vh;
+    right: 1.2vw;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(0,0,0,0.04);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .ff-modal-close:hover { background: rgba(0,0,0,0.08); }
+  .ff-modal h3 {
+    font-family: var(--font-display);
+    font-size: clamp(20px, 1.8vw, 28px);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2.5vh;
+    padding-right: 48px;
+  }
+  .ff-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.8vh;
+  }
+  .ff-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 1.4vh 1.2vw;
+    background: linear-gradient(135deg, rgba(37,99,235,0.04), rgba(234,88,12,0.03));
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 14px;
+  }
+  .ff-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent-blue), #4f8ff7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .ff-icon svg { display: block; }
+  .ff-content { min-width: 0; }
+  .ff-title {
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 0.85vw, 15px);
+    font-weight: 600;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .ff-desc {
+    font-size: clamp(13px, 0.9vw, 16px);
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+  .ff-desc strong { color: var(--text-primary); font-weight: 600; }
+
+  /* ---------- Python Code button ---------- */
+  .py-code-btn {
+    position: fixed;
+    bottom: 1.5vh;
+    left: 1.5vw;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #1e3a5f, #0f2440);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px;
+    padding: 10px 22px 10px 16px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: clamp(12px, 0.85vw, 15px);
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 50;
+  }
+  .py-code-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+  .py-code-btn svg { flex-shrink: 0; }
+
+  .py-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .py-overlay.open { opacity: 1; pointer-events: auto; }
+  .py-modal {
+    width: min(860px, 92vw);
+    max-height: 88vh;
+    overflow: auto;
+    background: #1e1e2e;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.40);
+    padding: 2.5vh 2vw 2vh;
+    position: relative;
+    transform: scale(0.92) translateY(10px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease;
+  }
+  .py-overlay.open .py-modal { transform: scale(1) translateY(0); opacity: 1; }
+  .py-modal-close {
+    position: absolute;
+    top: 1.2vh;
+    right: 1.2vw;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .py-modal-close:hover { background: rgba(255,255,255,0.12); }
+  .py-modal h3 {
+    font-family: var(--font-display);
+    font-size: clamp(20px, 1.8vw, 28px);
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1.5vh;
+    padding-right: 48px;
+  }
+  .py-modal pre {
+    background: #11111b;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 2vh 1.5vw;
+    overflow-x: auto;
+    margin: 0;
+  }
+  .py-modal code {
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 0.8vw, 14px);
+    line-height: 1.7;
+    color: #cdd6f4;
+    white-space: pre;
+  }
+  .py-modal code .kw { color: #cba6f7; }
+  .py-modal code .fn { color: #89b4fa; }
+  .py-modal code .str { color: #a6e3a1; }
+  .py-modal code .cm { color: #585b70; font-style: italic; }
+  .py-modal code .num { color: #fab387; }
+  .py-modal code .op { color: #89dceb; }
+
+  /* ---------- Footer ---------- */
+  .page-foot {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2vw;
+    padding: 0.3vh 0.2vw 0;
+    font-size: clamp(10px, 0.65vw, 12px);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  /* ============================================================
+     MODAL — large, opaque, clear for presentation
+     ============================================================ */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+
+  .modal {
+    width: min(1160px, 92vw);
+    max-height: 88vh;
+    overflow: auto;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 20px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.30);
+    padding: 2.5vh 2.5vw 2vh;
+    position: relative;
+    transform: scale(0.92) translateY(10px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease;
+  }
+  .overlay.open .modal { transform: scale(1) translateY(0); opacity: 1; }
+
+  .modal-close {
+    position: absolute;
+    top: 1.2vh;
+    right: 1.2vw;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(0,0,0,0.04);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .modal-close:hover { background: rgba(0,0,0,0.08); }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 48px;
+  }
+  .modal-head .chip {
+    background: var(--accent-gold-light);
+    color: var(--accent-gold);
+    font-size: 10px;
+    padding: 3px 10px;
+  }
+  .modal h2 {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2vw, 30px);
+    font-weight: 600;
+    color: var(--text-primary);
+    padding-right: 48px;
+    margin-top: 4px;
+  }
+
+  .modal-body {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 2.5vw;
+    margin-top: 2vh;
+    align-items: start;
+  }
+  .modal-chart {
+    background: var(--bg-warm);
+    border-radius: 14px;
+    padding: 1.2vh 1vw;
+    aspect-ratio: 16/10;
+  }
+  .modal-chart svg { display: block; width: 100%; height: 100%; }
+
+  /* Analysis panel */
+  .modal-analysis { }
+  .stat-row {
+    display: flex;
+    gap: 0.6vw;
+    margin-bottom: 1.5vh;
+    flex-wrap: wrap;
+  }
+  .stat-tile {
+    background: var(--bg-warm);
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 10px;
+    padding: 0.8vh 0.8vw;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1;
+    min-width: 0;
+  }
+  .stat-tile-label {
+    font-size: clamp(10px, 0.65vw, 12px);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+  .stat-tile-value {
+    font-family: var(--font-mono);
+    font-size: clamp(16px, 1.3vw, 22px);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .stat-tile-sub {
+    font-size: clamp(10px, 0.6vw, 12px);
+    color: var(--text-muted);
+  }
+
+  .analysis-points {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+    padding: 0;
+  }
+  .analysis-points li {
+    font-size: clamp(14px, 1vw, 17px);
+    color: var(--text-secondary);
+    line-height: 1.55;
+    padding-left: 20px;
+    position: relative;
+  }
+  .analysis-points li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+  }
+  .analysis-points strong { color: var(--text-primary); font-weight: 600; }
+  .analysis-points em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+
+  /* ---------- Responsive fallback ---------- */
+  @media (max-width: 768px) {
+    html, body { overflow: auto; height: auto; }
+    .page { height: auto; padding: 16px; }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .modal-body { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+    .modal { padding: 20px 16px; border-radius: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card, .overlay, .modal, .card-arrow { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <main class="grid">
+
+    <article class="card" data-chart="1" role="button" tabindex="0"
+              aria-haspopup="dialog" aria-label="Open: Average Bill by Day">
+      <div class="card-head">
+        <span class="badge">1</span>
+        <span class="card-title">Average Bill by Day</span>
+        <span class="chip">Bar</span>
+      </div>
+      <div class="chart-slot"><svg viewBox="0 0 480 270" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><text x="12" y="155" text-anchor="middle" font-size="10" fill="#8a8a8a" transform="rotate(-90,12,155)">Avg Bill ($)</text><text x="250" y="265" text-anchor="middle" font-size="10" fill="#8a8a8a">Day of Week</text><line x1="8" y1="180.0" x2="472" y2="180.0" stroke="#e8e6e0" stroke-width="1"/><line x1="8" y1="130.0" x2="472" y2="130.0" stroke="#e8e6e0" stroke-width="1"/><line x1="8" y1="80.0" x2="472" y2="80.0" stroke="#e8e6e0" stroke-width="1"/><line x1="8" y1="230.0" x2="472" y2="230.0" stroke="#d0cec6" stroke-width="1"/><rect x="36" y="116.1" width="80" height="113.9" rx="6" fill="url(#barGrad1)"/><text x="76.0" y="104" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a1a">$17.68</text><text x="76.0" y="248" text-anchor="middle" font-size="13" fill="#4a4a4a">Thu</text><rect x="146" y="119.7" width="80" height="110.3" rx="6" fill="url(#barGrad1)"/><text x="186.0" y="108" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a1a">$17.15</text><text x="186.0" y="248" text-anchor="middle" font-size="13" fill="#4a4a4a">Fri</text><rect x="256" y="97.7" width="80" height="132.3" rx="6" fill="url(#barGrad1)"/><text x="296.0" y="86" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a1a">$20.44</text><text x="296.0" y="248" text-anchor="middle" font-size="13" fill="#4a4a4a">Sat</text><rect x="366" y="91.3" width="80" height="138.7" rx="6" fill="url(#barGrad2)"/><text x="406.0" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#1a1a1a">$21.41</text><text x="406.0" y="248" text-anchor="middle" font-size="13" fill="#4a4a4a">Sun</text><defs><linearGradient id="barGrad1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#2563eb"/></linearGradient><linearGradient id="barGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#ea580c"/></linearGradient></defs></svg></div>
+      <div class="card-foot">
+        <span class="card-caption">Sunday highest ($21.41), Friday lowest ($17.15)</span>
+        <span class="card-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></span>
+      </div>
+    </article>
+
+    <article class="card" data-chart="2" role="button" tabindex="0"
+              aria-haspopup="dialog" aria-label="Open: Tip % by Party Size">
+      <div class="card-head">
+        <span class="badge">2</span>
+        <span class="card-title">Tip % by Party Size</span>
+        <span class="chip">Line</span>
+      </div>
+      <div class="chart-slot"><svg viewBox="0 0 480 270" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><text x="250" y="265" text-anchor="middle" font-size="10" fill="#8a8a8a">Party Size</text><text x="12" y="150" text-anchor="middle" font-size="10" fill="#8a8a8a" transform="rotate(-90,12,150)">Tip %</text><line x1="8" y1="180.5" x2="454" y2="180.5" stroke="#e8e6e0" stroke-width="1"/><line x1="8" y1="131.0" x2="454" y2="131.0" stroke="#e8e6e0" stroke-width="1"/><line x1="8" y1="81.5" x2="454" y2="81.5" stroke="#e8e6e0" stroke-width="1"/><line x1="8" y1="230.0" x2="454" y2="230.0" stroke="#d0cec6" stroke-width="1"/><defs><linearGradient id="lineArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ea580c" stop-opacity="0.15"/><stop offset="100%" stop-color="#ea580c" stop-opacity="0.02"/></linearGradient></defs><path d="M40.0,230.0 L40.0,76.0 L123.2,150.9 L206.4,170.5 L289.6,179.6 L372.8,186.0 L456.0,164.7 L456.0,230.0 Z" fill="url(#lineArea)"/><path d="M40.0,76.0 L123.2,150.9 L206.4,170.5 L289.6,179.6 L372.8,186.0 L456.0,164.7" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="40.0" cy="76.0" r="5.5" fill="#ea580c"/><circle cx="40.0" cy="76.0" r="5.5" fill="none" stroke="#fff" stroke-width="2.5"/><text x="46.0" y="62.0" text-anchor="start" font-size="14" font-weight="600" fill="#1a1a1a">21.7%</text><text x="40.0" y="246" text-anchor="middle" font-size="13" fill="#4a4a4a">Solo</text><circle cx="123.2" cy="150.9" r="5" fill="#ea580c"/><circle cx="123.2" cy="150.9" r="5" fill="none" stroke="#fff" stroke-width="2.5"/><text x="123.2" y="137" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a1a">16.6%</text><text x="123.2" y="246" text-anchor="middle" font-size="13" fill="#4a4a4a">2</text><circle cx="206.4" cy="170.5" r="5" fill="#ea580c"/><circle cx="206.4" cy="170.5" r="5" fill="none" stroke="#fff" stroke-width="2.5"/><text x="206.4" y="157" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a1a">15.2%</text><text x="206.4" y="246" text-anchor="middle" font-size="13" fill="#4a4a4a">3</text><circle cx="289.6" cy="179.6" r="5" fill="#ea580c"/><circle cx="289.6" cy="179.6" r="5" fill="none" stroke="#fff" stroke-width="2.5"/><text x="289.6" y="166" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a1a">14.6%</text><text x="289.6" y="246" text-anchor="middle" font-size="13" fill="#4a4a4a">4</text><circle cx="372.8" cy="186.0" r="5" fill="#ea580c"/><circle cx="372.8" cy="186.0" r="5" fill="none" stroke="#fff" stroke-width="2.5"/><text x="372.8" y="172" text-anchor="middle" font-size="14" font-weight="600" fill="#1a1a1a">14.2%</text><text x="372.8" y="246" text-anchor="middle" font-size="13" fill="#4a4a4a">5</text><circle cx="456.0" cy="164.7" r="5" fill="#ea580c"/><circle cx="456.0" cy="164.7" r="5" fill="none" stroke="#fff" stroke-width="2.5"/><text x="450.0" y="151" text-anchor="end" font-size="14" font-weight="600" fill="#1a1a1a">15.6%</text><text x="456.0" y="246" text-anchor="middle" font-size="13" fill="#4a4a4a">6</text></svg></div>
+      <div class="card-foot">
+        <span class="card-caption">Solo diners tip 21.7%, tables of 5 just 14.2%</span>
+        <span class="card-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></span>
+      </div>
+    </article>
+
+    <article class="card" data-chart="3" role="button" tabindex="0"
+              aria-haspopup="dialog" aria-label="Open: Bill vs. Tip Amount">
+      <div class="card-head">
+        <span class="badge">3</span>
+        <span class="card-title">Bill vs. Tip Amount</span>
+        <span class="chip">Scatter</span>
+      </div>
+      <div class="chart-slot"><svg viewBox="0 0 480 270" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><text x="6" y="140" text-anchor="middle" font-size="10" fill="#8a8a8a" transform="rotate(-90,6,140)">Tip Amount ($)</text><text x="251" y="265" text-anchor="middle" font-size="10" fill="#8a8a8a">Total Bill ($)</text><line x1="48" y1="179.0" x2="468" y2="179.0" stroke="#e8e6e0" stroke-width="1"/><text x="44" y="183" text-anchor="end" font-size="10" fill="#8a8a8a">$3</text><line x1="48" y1="124.0" x2="468" y2="124.0" stroke="#e8e6e0" stroke-width="1"/><text x="44" y="128" text-anchor="end" font-size="10" fill="#8a8a8a">$6</text><line x1="48" y1="69.0" x2="468" y2="69.0" stroke="#e8e6e0" stroke-width="1"/><text x="44" y="73" text-anchor="end" font-size="10" fill="#8a8a8a">$9</text><line x1="48" y1="234.0" x2="468" y2="234.0" stroke="#d0cec6" stroke-width="1"/><line x1="48" y1="14" x2="48" y2="234.0" stroke="#d0cec6" stroke-width="1"/><circle cx="156.9" cy="215.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="108.8" cy="203.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="186.0" cy="169.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="205.3" cy="173.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="211.9" cy="167.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="216.9" cy="147.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="97.4" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="228.4" cy="176.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="142.8" cy="198.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="140.9" cy="174.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="108.3" cy="202.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="289.0" cy="142.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="145.5" cy="205.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="167.3" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="141.3" cy="178.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="190.1" cy="162.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="108.7" cy="203.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="151.8" cy="166.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="156.7" cy="169.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="183.4" cy="172.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="163.6" cy="159.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="180.8" cy="183.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="148.1" cy="193.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="319.1" cy="95.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="177.4" cy="175.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="162.8" cy="191.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="130.7" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="125.8" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="191.0" cy="155.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="176.1" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="103.1" cy="207.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="166.7" cy="188.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="142.9" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="183.7" cy="189.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="162.6" cy="174.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="208.0" cy="168.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="152.0" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="156.5" cy="177.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="169.2" cy="191.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="260.2" cy="142.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="150.0" cy="192.9" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="160.3" cy="187.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="134.8" cy="177.9" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="104.0" cy="209.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="253.9" cy="131.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="166.3" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="194.8" cy="142.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="268.4" cy="124.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="240.5" cy="196.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="164.5" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="124.7" cy="188.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="108.4" cy="186.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="285.8" cy="138.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="105.9" cy="205.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="218.9" cy="154.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="175.0" cy="169.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="308.9" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="225.0" cy="206.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="115.3" cy="201.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="383.2" cy="110.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="180.8" cy="175.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="133.9" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="113.7" cy="197.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="166.3" cy="165.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="161.2" cy="185.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="179.2" cy="176.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="153.0" cy="188.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="56.2" cy="215.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="180.3" cy="197.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="142.6" cy="195.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="120.9" cy="197.9" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="157.5" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="228.3" cy="176.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="216.9" cy="142.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="140.5" cy="193.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="110.0" cy="211.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="163.6" cy="177.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="230.7" cy="160.7" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="198.6" cy="179.0" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="159.1" cy="184.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="174.6" cy="179.0" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="154.5" cy="171.7" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="106.8" cy="200.5" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="270.4" cy="142.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="149.6" cy="196.8" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="285.9" cy="139.2" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="128.3" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="166.2" cy="160.7" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="212.7" cy="126.7" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="187.1" cy="179.0" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="243.5" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="196.7" cy="169.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="75.6" cy="215.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="152.0" cy="155.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="198.6" cy="174.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="324.6" cy="147.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="231.3" cy="160.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="121.0" cy="206.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="186.0" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="124.1" cy="206.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="116.1" cy="188.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="145.2" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="354.4" cy="188.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="196.2" cy="170.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="185.3" cy="159.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="145.1" cy="203.9" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="182.2" cy="159.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="216.4" cy="155.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="165.9" cy="165.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="137.5" cy="160.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="135.3" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="86.4" cy="215.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="309.4" cy="160.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="207.2" cy="187.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="220.0" cy="160.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="159.2" cy="169.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="250.5" cy="141.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="111.0" cy="206.5" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="123.9" cy="201.0" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="208.2" cy="180.5" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="118.6" cy="191.7" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="131.1" cy="203.2" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="137.1" cy="188.2" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="149.4" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="124.3" cy="187.8" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="249.6" cy="157.0" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="95.6" cy="206.9" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="139.0" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="116.3" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="199.1" cy="194.0" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="172.0" cy="206.5" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="180.6" cy="182.1" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="114.8" cy="206.5" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="122.7" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="166.1" cy="174.4" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="95.6" cy="211.1" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="108.7" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="136.4" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="149.7" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="129.2" cy="183.6" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="160.4" cy="169.8" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="282.1" cy="111.2" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="331.9" cy="142.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="229.7" cy="142.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="152.8" cy="191.8" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="94.4" cy="206.5" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="168.8" cy="209.1" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="119.9" cy="204.1" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="104.7" cy="202.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="88.3" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="135.8" cy="188.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="129.0" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="158.8" cy="183.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="211.6" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="177.0" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="249.9" cy="139.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="382.4" cy="142.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="214.8" cy="165.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="130.9" cy="186.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="153.3" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="189.5" cy="169.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="125.6" cy="188.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="151.3" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="133.9" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="160.7" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="211.4" cy="170.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="184.2" cy="192.9" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="263.4" cy="151.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="110.6" cy="204.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="110.9" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="401.5" cy="50.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="148.4" cy="176.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="86.4" cy="139.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="264.4" cy="175.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="155.7" cy="160.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="272.0" cy="177.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="163.4" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="138.7" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="103.4" cy="160.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="284.5" cy="168.9" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="284.6" cy="166.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="202.8" cy="130.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="362.0" cy="169.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="201.6" cy="114.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="327.3" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="183.7" cy="142.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="185.2" cy="169.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="254.3" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="165.3" cy="169.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="201.1" cy="160.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="147.5" cy="206.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="177.3" cy="157.2" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="239.7" cy="187.1" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="146.0" cy="197.0" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="153.9" cy="160.7" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="88.7" cy="207.6" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="108.8" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="345.8" cy="142.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="128.0" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="131.7" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="169.3" cy="160.7" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="126.2" cy="197.2" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="128.0" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="152.6" cy="188.2" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="182.5" cy="160.7" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="153.1" cy="174.8" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="226.3" cy="171.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="314.1" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="209.6" cy="196.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="126.3" cy="193.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="251.4" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="221.3" cy="139.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="383.6" cy="69.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="130.0" cy="188.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="237.8" cy="114.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="127.3" cy="213.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="237.6" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="117.8" cy="206.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="90.0" cy="207.6" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="252.0" cy="177.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="122.0" cy="193.7" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="131.1" cy="170.2" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="96.1" cy="198.8" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="149.6" cy="179.0" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="131.1" cy="205.0" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="151.7" cy="188.2" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="107.0" cy="197.3" r="3.3" fill="#ea580c" fill-opacity="0.5"/><circle cx="181.9" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="130.1" cy="184.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="194.0" cy="181.2" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="207.7" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="147.5" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="118.0" cy="171.8" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="111.9" cy="207.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="146.3" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="106.8" cy="211.1" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="125.1" cy="215.7" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="271.5" cy="212.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="293.2" cy="148.4" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="244.0" cy="125.5" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="230.6" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="198.0" cy="197.3" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="162.9" cy="201.9" r="3.3" fill="#2563eb" fill-opacity="0.5"/><circle cx="169.8" cy="179.0" r="3.3" fill="#2563eb" fill-opacity="0.5"/><line x1="48.0" y1="217.1" x2="468.0" y2="101.6" stroke="#1a1a1a" stroke-width="2" stroke-dasharray="6,4" opacity="0.4"/><text x="468" y="28" text-anchor="end" font-size="13" font-weight="600" fill="#1a1a1a">r = 0.676</text></svg></div>
+      <div class="card-foot">
+        <span class="card-caption">Strong positive correlation (r = 0.676)</span>
+        <span class="card-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></span>
+      </div>
+    </article>
+
+    <article class="card" data-chart="4" role="button" tabindex="0"
+              aria-haspopup="dialog" aria-label="Open: Gender Spend vs Generosity">
+      <div class="card-head">
+        <span class="badge">4</span>
+        <span class="card-title">Gender: Spend vs. Generosity</span>
+        <span class="chip">Donut</span>
+      </div>
+      <div class="chart-slot"><svg viewBox="0 0 480 260" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="donutMale" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#2563eb"/></linearGradient><linearGradient id="donutFemale" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fb923c"/><stop offset="100%" stop-color="#ea580c"/></linearGradient></defs><path d="M153.6,26.0 A104.0,104.0 0 1 1 72.2,194.8 L104.8,168.9 A62.4,62.4 0 1 0 153.6,67.6 Z" fill="url(#donutMale)" stroke="#fff" stroke-width="2.5"/><path d="M72.2,194.8 A104.0,104.0 0 0 1 153.6,26.0 L153.6,67.6 A62.4,62.4 0 0 0 104.8,168.9 Z" fill="url(#donutFemale)" stroke="#fff" stroke-width="2.5"/><text x="153.6" y="124" text-anchor="middle" font-size="22" font-weight="700" fill="#1a1a1a">64.3%</text><text x="153.6" y="144" text-anchor="middle" font-size="11" fill="#8a8a8a">Male</text><rect x="297.6" y="61.8" width="12" height="12" rx="3" fill="url(#donutMale)"/><text x="315.6" y="72.8" font-size="14" font-weight="700" fill="#1a1a1a">Male &middot; 64.3%</text><text x="315.6" y="88.8" font-size="11.5" fill="#4a4a4a">avg bill $20.74 &middot; tip 15.8%</text><rect x="297.6" y="107.8" width="12" height="12" rx="3" fill="url(#donutFemale)"/><text x="315.6" y="118.8" font-size="14" font-weight="700" fill="#1a1a1a">Female &middot; 35.7%</text><text x="315.6" y="134.8" font-size="11.5" fill="#4a4a4a">avg bill $18.06 &middot; tip 16.6%</text></svg></div>
+      <div class="card-foot">
+        <span class="card-caption">Men spend more, but women tip higher % (16.6 vs 15.8)</span>
+        <span class="card-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></span>
+      </div>
+    </article>
+
+    <article class="card" data-chart="5" role="button" tabindex="0"
+              aria-haspopup="dialog" aria-label="Open: Smoker Status Distribution">
+      <div class="card-head">
+        <span class="badge">5</span>
+        <span class="card-title">Tip % by Smoker Status</span>
+        <span class="chip">Histogram</span>
+      </div>
+      <div class="chart-slot"><svg viewBox="0 0 480 270" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><text x="6" y="145" text-anchor="middle" font-size="10" fill="#8a8a8a" transform="rotate(-90,6,145)">Frequency</text><g><rect x="321.6" y="6" width="10" height="10" rx="2" fill="#2563eb"/><text x="337.6" y="15" font-size="11" fill="#4a4a4a">Non-smoker</text><rect x="417.6" y="6" width="10" height="10" rx="2" fill="#ea580c"/><text x="433.6" y="15" font-size="11" fill="#4a4a4a">Smoker</text></g><line x1="8" y1="175.0" x2="472" y2="175.0" stroke="#e8e6e0" stroke-width="1"/><line x1="8" y1="124.0" x2="472" y2="124.0" stroke="#e8e6e0" stroke-width="1"/><line x1="8" y1="73.0" x2="472" y2="73.0" stroke="#e8e6e0" stroke-width="1"/><line x1="8" y1="226.0" x2="472" y2="226.0" stroke="#d0cec6" stroke-width="1"/><rect x="24.1" y="226.0" width="16.0" height="0.0" rx="3" fill="#2563eb"/><rect x="42.1" y="224.6" width="16.0" height="1.4" rx="3" fill="#ea580c"/><text x="41.1" y="244" text-anchor="middle" font-size="11" fill="#4a4a4a">0-5</text><rect x="90.4" y="204.7" width="16.0" height="21.3" rx="3" fill="#2563eb"/><rect x="108.4" y="154.4" width="16.0" height="71.6" rx="3" fill="#ea580c"/><text x="107.4" y="244" text-anchor="middle" font-size="11" fill="#4a4a4a">5-10</text><rect x="156.7" y="72.3" width="16.0" height="153.7" rx="3" fill="#2563eb"/><rect x="174.7" y="128.1" width="16.0" height="97.9" rx="3" fill="#ea580c"/><text x="173.7" y="244" text-anchor="middle" font-size="11" fill="#4a4a4a">10-15</text><rect x="223.0" y="64.2" width="16.0" height="161.8" rx="3" fill="#2563eb"/><rect x="241.0" y="71.1" width="16.0" height="154.9" rx="3" fill="#ea580c"/><text x="240.0" y="244" text-anchor="middle" font-size="11" fill="#4a4a4a">15-20</text><rect x="289.3" y="175.0" width="16.0" height="51.0" rx="3" fill="#2563eb"/><rect x="307.3" y="189.5" width="16.0" height="36.5" rx="3" fill="#ea580c"/><text x="306.3" y="244" text-anchor="middle" font-size="11" fill="#4a4a4a">20-25</text><rect x="355.6" y="220.9" width="16.0" height="5.1" rx="3" fill="#2563eb"/><rect x="373.6" y="211.5" width="16.0" height="14.5" rx="3" fill="#ea580c"/><text x="372.6" y="244" text-anchor="middle" font-size="11" fill="#4a4a4a">25-30</text><rect x="421.9" y="226.0" width="16.0" height="0.0" rx="3" fill="#2563eb"/><rect x="439.9" y="215.8" width="16.0" height="10.2" rx="3" fill="#ea580c"/><text x="438.9" y="244" text-anchor="middle" font-size="11" fill="#4a4a4a">30+</text><text x="240.0" y="262" text-anchor="middle" font-size="10" fill="#8a8a8a">Tip % of bill</text></svg></div>
+      <div class="card-foot">
+        <span class="card-caption">Smokers spread wider, non-smokers cluster at 10-20%</span>
+        <span class="card-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></span>
+      </div>
+    </article>
+
+    <section class="insights-card">
+      <h3>Key Takeaways</h3>
+      <ul class="insights-list">
+        <li>Weekend checks run highest &mdash; <strong>Sunday</strong> averages $21.41, well above <strong>Friday</strong>&rsquo;s $17.15 low</li>
+        <li>Tip % falls as tables grow: <strong>solo diners</strong> tip 21.7%, more than double the 14.2% at tables of 5</li>
+        <li>Bill and tip are strongly correlated (<strong>r = 0.676</strong>) &mdash; bigger checks mean bigger tips in dollar terms</li>
+        <li><strong>Men</strong> place 64% of orders and spend more, yet <strong>women</strong> tip higher (16.6% vs 15.8%)</li>
+        <li>Smokers and non-smokers average similar tip %, but smokers vary <strong>2.1&times;</strong> more widely</li>
+      </ul>
+    </section>
+  </main>
+
+  <div class="page-foot">
+    <span>Source: Seaborn &ldquo;tips&rdquo; dataset &middot; n = 244</span>
+    <span>Data Analysis &amp; Visualization &middot; Group Project</span>
+  </div>
+</div>
+
+<!-- Fun Facts button -->
+<button class="fun-facts-btn" id="ff-btn" aria-label="Show fun facts">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26z"/></svg>
+  Fun Facts
+</button>
+
+<!-- Fun Facts modal -->
+<div class="ff-overlay" id="ff-overlay">
+  <div class="ff-modal">
+    <button class="ff-modal-close" id="ff-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>
+    </button>
+    <h3>Fun Facts from the Data</h3>
+    <ul class="ff-list">
+      <li class="ff-item">
+        <div class="ff-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 22V8a4 4 0 0 0-4-4H4v9a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4V4h-2a4 4 0 0 0-4 4v14"/></svg></div>
+        <div class="ff-content">
+          <div class="ff-title">71% Tip</div>
+          <div class="ff-desc">One diner tipped <strong>$5.15 on a $7.25 bill</strong> &mdash; nearly doubling it. The most generous tip percentage in the entire dataset.</div>
+        </div>
+      </li>
+      <li class="ff-item">
+        <div class="ff-icon" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-9z"/><path d="M3 12V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v5"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg></div>
+        <div class="ff-content">
+          <div class="ff-title">Friday Ghost Town</div>
+          <div class="ff-desc">Only <strong>19 orders</strong> all Friday &mdash; Saturday had <strong>87</strong>. The restaurant was 4.5x busier on Saturdays.</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Python Code button -->
+<button class="py-code-btn" id="py-btn" aria-label="Show Python code">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14.5" y1="4" x2="9.5" y2="20"/></svg>
+  Python Code
+</button>
+
+<!-- Python Code modal -->
+<div class="py-overlay" id="py-overlay">
+  <div class="py-modal">
+    <button class="py-modal-close" id="py-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>
+    </button>
+    <h3>Python Analysis Code</h3>
+    <pre><code><span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> seaborn <span class="kw">as</span> sns
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+<span class="cm"># Load the tips dataset</span>
+tips <span class="op">=</span> sns.<span class="fn">load_dataset</span>(<span class="str">'tips'</span>)
+
+<span class="cm"># 1. Average Bill by Day</span>
+avg_bill <span class="op">=</span> tips.<span class="fn">groupby</span>(<span class="str">'day'</span>)[<span class="str">'total_bill'</span>].<span class="fn">mean</span>()
+plt.<span class="fn">figure</span>(figsize<span class="op">=</span>(<span class="num">8</span>, <span class="num">5</span>))
+sns.<span class="fn">barplot</span>(data<span class="op">=</span>tips, x<span class="op">=</span><span class="str">'day'</span>, y<span class="op">=</span><span class="str">'total_bill'</span>,
+            order<span class="op">=</span>[<span class="str">'Thur'</span>, <span class="str">'Fri'</span>, <span class="str">'Sat'</span>, <span class="str">'Sun'</span>],
+            ci<span class="op">=</span><span class="kw">None</span>, palette<span class="op">=</span><span class="str">'Blues_d'</span>)
+plt.<span class="fn">xlabel</span>(<span class="str">'Day of Week'</span>)
+plt.<span class="fn">ylabel</span>(<span class="str">'Average Bill ($)'</span>)
+plt.<span class="fn">title</span>(<span class="str">'Average Total Bill by Day'</span>)
+plt.<span class="fn">show</span>()
+
+<span class="cm"># 2. Tip % by Party Size</span>
+tips[<span class="str">'tip_pct'</span>] <span class="op">=</span> (tips[<span class="str">'tip'</span>] <span class="op">/</span> tips[<span class="str">'total_bill'</span>]) <span class="op">*</span> <span class="num">100</span>
+tip_by_size <span class="op">=</span> tips.<span class="fn">groupby</span>(<span class="str">'size'</span>)[<span class="str">'tip_pct'</span>].<span class="fn">mean</span>()
+plt.<span class="fn">figure</span>(figsize<span class="op">=</span>(<span class="num">8</span>, <span class="num">5</span>))
+plt.<span class="fn">plot</span>(tip_by_size.index, tip_by_size.values,
+        marker<span class="op">=</span><span class="str">'o'</span>, color<span class="op">=</span><span class="str">'#ea580c'</span>, linewidth<span class="op">=</span><span class="num">2.5</span>)
+plt.<span class="fn">fill_between</span>(tip_by_size.index, tip_by_size.values,
+                 alpha<span class="op">=</span><span class="num">0.1</span>, color<span class="op">=</span><span class="str">'#ea580c'</span>)
+plt.<span class="fn">xlabel</span>(<span class="str">'Party Size'</span>)
+plt.<span class="fn">ylabel</span>(<span class="str">'Average Tip %'</span>)
+plt.<span class="fn">title</span>(<span class="str">'Tip Percentage by Party Size'</span>)
+plt.<span class="fn">show</span>()
+
+<span class="cm"># 3. Bill vs Tip (Scatter + Correlation)</span>
+<span class="kw">from</span> scipy <span class="kw">import</span> stats
+r, p <span class="op">=</span> stats.<span class="fn">pearsonr</span>(tips[<span class="str">'total_bill'</span>], tips[<span class="str">'tip'</span>])
+<span class="fn">print</span>(<span class="str">f'Correlation: r = </span>{r:<span class="num">.3f</span>}<span class="str">, p = </span>{p:<span class="num">.2e</span>}<span class="str">'</span>)
+plt.<span class="fn">figure</span>(figsize<span class="op">=</span>(<span class="num">8</span>, <span class="num">5</span>))
+sns.<span class="fn">scatterplot</span>(data<span class="op">=</span>tips, x<span class="op">=</span><span class="str">'total_bill'</span>, y<span class="op">=</span><span class="str">'tip'</span>,
+                hue<span class="op">=</span><span class="str">'time'</span>, alpha<span class="op">=</span><span class="num">0.6</span>)
+sns.<span class="fn">regplot</span>(data<span class="op">=</span>tips, x<span class="op">=</span><span class="str">'total_bill'</span>, y<span class="op">=</span><span class="str">'tip'</span>,
+            scatter<span class="op">=</span><span class="kw">False</span>, color<span class="op">=</span><span class="str">'black'</span>,
+            line_kws<span class="op">=</span>{<span class="str">'linestyle'</span>: <span class="str">'--'</span>, <span class="str">'alpha'</span>: <span class="num">0.4</span>})
+plt.<span class="fn">xlabel</span>(<span class="str">'Total Bill ($)'</span>)
+plt.<span class="fn">ylabel</span>(<span class="str">'Tip Amount ($)'</span>)
+plt.<span class="fn">title</span>(<span class="str">f'Bill vs Tip (r = {r:.3f})'</span>)
+plt.<span class="fn">show</span>()
+
+<span class="cm"># 4. Gender: Spend vs Generosity</span>
+gender_stats <span class="op">=</span> tips.<span class="fn">groupby</span>(<span class="str">'sex'</span>).<span class="fn">agg</span>(
+    count<span class="op">=</span>(<span class="str">'total_bill'</span>, <span class="str">'count'</span>),
+    avg_bill<span class="op">=</span>(<span class="str">'total_bill'</span>, <span class="str">'mean'</span>),
+    avg_tip_pct<span class="op">=</span>(<span class="str">'tip_pct'</span>, <span class="str">'mean'</span>)
+)
+<span class="fn">print</span>(gender_stats)
+plt.<span class="fn">figure</span>(figsize<span class="op">=</span>(<span class="num">6</span>, <span class="num">6</span>))
+plt.<span class="fn">pie</span>(gender_stats[<span class="str">'count'</span>],
+       labels<span class="op">=</span>[<span class="str">'Male'</span>, <span class="str">'Female'</span>],
+       autopct<span class="op">=</span><span class="str">'%1.1f%%'</span>,
+       colors<span class="op">=</span>[<span class="str">'#2563eb'</span>, <span class="str">'#ea580c'</span>],
+       wedgeprops<span class="op">=</span>{<span class="str">'width'</span>: <span class="num">0.4</span>})
+plt.<span class="fn">title</span>(<span class="str">'Order Distribution by Gender'</span>)
+plt.<span class="fn">show</span>()
+
+<span class="cm"># 5. Tip % Distribution by Smoker Status</span>
+plt.<span class="fn">figure</span>(figsize<span class="op">=</span>(<span class="num">8</span>, <span class="num">5</span>))
+<span class="kw">for</span> label, group <span class="kw">in</span> tips.<span class="fn">groupby</span>(<span class="str">'smoker'</span>):
+    plt.<span class="fn">hist</span>(group[<span class="str">'tip_pct'</span>], bins<span class="op">=</span><span class="num">15</span>, alpha<span class="op">=</span><span class="num">0.6</span>,
+            label<span class="op">=</span>label,
+            color<span class="op">=</span><span class="str">'#2563eb'</span> <span class="kw">if</span> label <span class="op">==</span> <span class="str">'No'</span> <span class="kw">else</span> <span class="str">'#ea580c'</span>)
+plt.<span class="fn">xlabel</span>(<span class="str">'Tip % of Bill'</span>)
+plt.<span class="fn">ylabel</span>(<span class="str">'Frequency'</span>)
+plt.<span class="fn">legend</span>(title<span class="op">=</span><span class="str">'Smoker'</span>)
+plt.<span class="fn">title</span>(<span class="str">'Tip % Distribution by Smoker Status'</span>)
+plt.<span class="fn">show</span>()
+</code></pre>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>
+    </button>
+    <div class="modal-head"><span class="chip" id="modal-chip"></span></div>
+    <h2 id="modal-title"></h2>
+    <div class="modal-body">
+      <div class="modal-chart" id="modal-chart"></div>
+      <div class="modal-analysis" id="modal-analysis"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function() {
+  var ANALYSES = {
+  1: {
+    title: "Average Bill by Day",
+    chip: "Bar Chart",
+    body: '<div class="stat-row"><div class="stat-tile"><span class="stat-tile-label">Highest</span><span class="stat-tile-value">$21.41</span><span class="stat-tile-sub">Sunday</span></div><div class="stat-tile"><span class="stat-tile-label">Lowest</span><span class="stat-tile-value">$17.15</span><span class="stat-tile-sub">Friday</span></div><div class="stat-tile"><span class="stat-tile-label">Spread</span><span class="stat-tile-value">$4.26</span><span class="stat-tile-sub">Sun − Fri</span></div></div><ul class="analysis-points"><li>Average check climbs steadily from <strong>Thursday ($17.68)</strong> through <strong>Sunday ($21.41)</strong>, a <em>25% increase</em> over the lowest day (Friday)</li><li>Thursday and Friday cluster close together around <strong>$17–$18</strong>, while Saturday jumps noticeably to <strong>$20.44</strong></li><li>Weekend parties tend to be <strong>larger and order more</strong>, naturally pushing the average bill up</li><li>This measures <strong>spend, not generosity</strong> — the party-size analysis shows how group size affects the actual percentage tipped</li></ul>'
+  },
+  2: {
+    title: "Tip % Trend by Party Size",
+    chip: "Line Chart",
+    body: '<div class="stat-row"><div class="stat-tile"><span class="stat-tile-label">Solo Diners</span><span class="stat-tile-value">21.7%</span><span class="stat-tile-sub">highest</span></div><div class="stat-tile"><span class="stat-tile-label">Tables of 5</span><span class="stat-tile-value">14.2%</span><span class="stat-tile-sub">lowest</span></div><div class="stat-tile"><span class="stat-tile-label">Drop-off</span><span class="stat-tile-value">7.6pp</span><span class="stat-tile-sub">solo → low</span></div></div><ul class="analysis-points"><li><strong>Solo diners</strong> are the most generous at <em>21.7%</em> — significantly higher than any other group size</li><li>Sharp decline to <strong>16.6%</strong> for pairs, then a steady decrease to a low of <strong>14.2%</strong> at tables of 5</li><li>Tables of 6 tick back up slightly to <strong>15.6%</strong>, though this is a small, statistically noisy sample</li><li>Solo diners often <strong>round up small bills generously</strong>, while larger groups tend to under-tip proportionally when splitting checks</li><li>Tips do not scale linearly with bill size — the <strong>diffusion of responsibility</strong> effect is clearly visible</li></ul>'
+  },
+  3: {
+    title: "Bill vs. Tip Amount",
+    chip: "Scatter Plot",
+    body: '<div class="stat-row"><div class="stat-tile"><span class="stat-tile-label">Correlation</span><span class="stat-tile-value">r = 0.676</span><span class="stat-tile-sub">bill ↔ tip</span></div><div class="stat-tile"><span class="stat-tile-label">Sample</span><span class="stat-tile-value">244</span><span class="stat-tile-sub">transactions</span></div><div class="stat-tile"><span class="stat-tile-label">Service Split</span><span class="stat-tile-value">68 / 176</span><span class="stat-tile-sub">lunch / dinner</span></div></div><ul class="analysis-points"><li><strong>Strong positive correlation (r = 0.676)</strong> — bigger checks reliably produce bigger tips in dollar terms</li><li>Lunch and dinner follow the <strong>same underlying trend</strong>, though lunch bills cluster lower and tighter</li><li>Lunch service only occurs on <strong>Thursday and Friday</strong> in this dataset, limiting lunch-specific conclusions</li><li>Some high-bill outliers tip <strong>disproportionately low or high</strong>, creating visible scatter at the upper range</li><li>This is precisely why <strong>percentage-based metrics</strong> are needed for fair generosity comparisons across groups</li></ul>'
+  },
+  4: {
+    title: "Gender: Spend vs. Generosity",
+    chip: "Donut Chart",
+    body: '<div class="stat-row"><div class="stat-tile"><span class="stat-tile-label">Orders</span><span class="stat-tile-value">64% / 36%</span><span class="stat-tile-sub">men / women</span></div><div class="stat-tile"><span class="stat-tile-label">Avg Bill</span><span class="stat-tile-value">$20.74 / $18.06</span><span class="stat-tile-sub">men / women</span></div><div class="stat-tile"><span class="stat-tile-label">Avg Tip %</span><span class="stat-tile-value">15.8% / 16.6%</span><span class="stat-tile-sub">men / women</span></div></div><ul class="analysis-points"><li><strong>Men placed 64.3%</strong> of all 244 orders and spent more per visit on average (<strong>$20.74 vs $18.06</strong>)</li><li>Despite higher spend, men tipped a <strong>lower percentage</strong> — <em>15.8% vs 16.6%</em> for women</li><li>The gap is modest and within expected variation for this sample size, but the <strong>pattern is consistent</strong></li><li>Reinforces a key theme: <strong>bigger bill does not automatically mean more generous tipping</strong></li></ul>'
+  },
+  5: {
+    title: "Tip % Distribution by Smoker Status",
+    chip: "Histogram",
+    body: '<div class="stat-row"><div class="stat-tile"><span class="stat-tile-label">Avg Tip %</span><span class="stat-tile-value">15.9% / 16.3%</span><span class="stat-tile-sub">non-smoker / smoker</span></div><div class="stat-tile"><span class="stat-tile-label">Variability</span><span class="stat-tile-value">2.1×</span><span class="stat-tile-sub">smoker vs non-smoker</span></div><div class="stat-tile"><span class="stat-tile-label">Sample</span><span class="stat-tile-value">151 / 93</span><span class="stat-tile-sub">non-smoker / smoker</span></div></div><ul class="analysis-points"><li>Averages are nearly identical (<strong>16.3% smokers vs 15.9%</strong> non-smokers) — a chart of means would suggest no difference</li><li>The full distribution tells a different story: <strong>79% of non-smokers</strong> cluster tightly between 10–20%</li><li>Smokers spread much wider — some tip <strong>under 5%, others over 30%</strong>, with <em>2.1× more variation</em></li><li>Standard deviation: <strong>8.5%</strong> for smokers vs <strong>4.0%</strong> for non-smokers</li><li>Key lesson: <strong>averages can hide inconsistency</strong> — the distribution, not just the mean, matters</li></ul>'
+  }
+};
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasGSAP = typeof gsap !== 'undefined';
+
+  var cardEls = document.querySelectorAll('.card, .insights-card');
+  if (hasGSAP && !reduceMotion) {
+    gsap.from(cardEls, {
+      opacity: 0, y: 14, scale: 0.98, duration: 0.45, ease: 'power2.out',
+      stagger: { each: 0.06, from: 'start' }
+    });
+  }
+
+  var overlay = document.getElementById('overlay');
+  var modal = document.getElementById('modal');
+  var modalChart = document.getElementById('modal-chart');
+  var modalAnalysis = document.getElementById('modal-analysis');
+  var modalTitle = document.getElementById('modal-title');
+  var modalChip = document.getElementById('modal-chip');
+  var closeBtn = document.getElementById('modal-close');
+  var lastTrigger = null;
+
+  function focusablesIn(container) {
+    return Array.prototype.slice.call(
+      container.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])')
+    ).filter(function(el) { return el.offsetParent !== null; });
+  }
+
+  function openModal(id) {
+    var data = ANALYSES[id];
+    if (!data) return;
+    var cardEl = document.querySelector('.card[data-chart="' + id + '"]');
+    var svgEl = cardEl.querySelector('.chart-slot svg');
+    modalChart.innerHTML = '';
+    if (svgEl) modalChart.appendChild(svgEl.cloneNode(true));
+    modalTitle.textContent = data.title;
+    modalChip.textContent = data.chip;
+    modalAnalysis.innerHTML = data.body;
+    overlay.classList.add('open');
+    overlay.style.pointerEvents = 'auto';
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+    document.addEventListener('keydown', onKeydown);
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    overlay.style.pointerEvents = '';
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', onKeydown);
+    if (lastTrigger) lastTrigger.focus();
+  }
+
+  function onKeydown(e) {
+    if (e.key === 'Escape') { closeModal(); return; }
+    if (e.key === 'Tab') {
+      var f = focusablesIn(modal);
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }
+
+  document.querySelectorAll('.card[data-chart]').forEach(function(card) {
+    card.addEventListener('click', function() { lastTrigger = card; openModal(card.getAttribute('data-chart')); });
+    card.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); lastTrigger = card; openModal(card.getAttribute('data-chart')); }
+    });
+  });
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeModal(); });
+
+  // Fun Facts modal
+  var ffBtn = document.getElementById('ff-btn');
+  var ffOverlay = document.getElementById('ff-overlay');
+  var ffClose = document.getElementById('ff-close');
+
+  ffBtn.addEventListener('click', function() {
+    ffOverlay.classList.add('open');
+  });
+  ffClose.addEventListener('click', function() {
+    ffOverlay.classList.remove('open');
+  });
+  ffOverlay.addEventListener('click', function(e) {
+    if (e.target === ffOverlay) ffOverlay.classList.remove('open');
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && ffOverlay.classList.contains('open')) {
+      ffOverlay.classList.remove('open');
+    }
+    if (e.key === 'Escape' && pyOverlay.classList.contains('open')) {
+      pyOverlay.classList.remove('open');
+    }
+  });
+
+  // Python Code modal
+  var pyBtn = document.getElementById('py-btn');
+  var pyOverlay = document.getElementById('py-overlay');
+  var pyClose = document.getElementById('py-close');
+
+  pyBtn.addEventListener('click', function() {
+    pyOverlay.classList.add('open');
+  });
+  pyClose.addEventListener('click', function() {
+    pyOverlay.classList.remove('open');
+  });
+  pyOverlay.addEventListener('click', function(e) {
+    if (e.target === pyOverlay) pyOverlay.classList.remove('open');
+  });
+})();
+</script>
+
+</body>
+</html>
