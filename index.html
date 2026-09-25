@@ -3,7 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Tipping Report</title>
+<title>Tips Dataset Analysis &ndash; The Tipping Report</title>
+<meta name="description" content="Tips dataset analysis of the Seaborn tips dataset &mdash; bill by day, tip % by party size, gender &amp; smoker trends, with interactive charts and Python code.">
+<meta name="keywords" content="tips dataset, tips dataset analysis, seaborn tips dataset, data analysis, data visualization">
+<link rel="canonical" href="https://sohith-kodavali.github.io/davproj/">
+<meta property="og:title" content="Tips Dataset Analysis &ndash; The Tipping Report">
+<meta property="og:description" content="Tips dataset analysis of the Seaborn tips dataset &mdash; bill by day, tip % by party size, gender &amp; smoker trends, with interactive charts and Python code.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sohith-kodavali.github.io/davproj/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Tips Dataset Analysis",
+  "description": "Exploratory data analysis and visualization of the Seaborn tips dataset: average bill by day, tip percentage by party size, bill vs tip correlation, gender comparisons, and smoker status across 244 restaurant transactions.",
+  "url": "https://sohith-kodavali.github.io/davproj/",
+  "isAccessibleForFree": true,
+  "keywords": ["tips dataset", "tips dataset analysis", "seaborn tips", "data visualization"]
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -163,6 +181,27 @@
     transition: opacity 0.2s ease, transform 0.2s ease;
   }
 
+  /* ---------- Page header ---------- */
+  .page-head {
+    flex-shrink: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 1vw;
+    padding: 0.2vh 0.3vw 0.7vh;
+  }
+  .page-head h1 {
+    font-family: var(--font-display);
+    font-size: clamp(18px, 1.5vw, 26px);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .page-head p {
+    font-size: clamp(11px, 0.75vw, 13px);
+    color: var(--text-muted);
+    font-family: var(--font-body);
+  }
+
   /* ---------- Insights card ---------- */
   .insights-card {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
@@ -189,6 +228,12 @@
     height: 16px;
     border-radius: 2px;
     background: linear-gradient(180deg, var(--accent-gold), var(--accent-orange));
+  }
+  .insights-intro {
+    font-size: clamp(11px, 0.8vw, 14px);
+    line-height: 1.45;
+    color: rgba(255,255,255,0.65);
+    margin: -0.2vh 0 1vh;
   }
   .insights-list {
     list-style: none;
@@ -635,6 +680,10 @@
 <body>
 
 <div class="page">
+  <header class="page-head">
+    <h1>Tips Dataset Analysis</h1>
+    <p>Exploratory analysis &amp; visualization of the Seaborn &ldquo;tips&rdquo; dataset &mdash; 244 restaurant transactions</p>
+  </header>
   <main class="grid">
 
     <article class="card" data-chart="1" role="button" tabindex="0"
@@ -709,6 +758,7 @@
 
     <section class="insights-card">
       <h3>Key Takeaways</h3>
+      <p class="insights-intro">This tips dataset analysis explores tipping behavior across 244 restaurant bills &mdash; how day of week, party size, gender, and smoker status shape how much people tip.</p>
       <ul class="insights-list">
         <li>Weekend checks run highest &mdash; <strong>Sunday</strong> averages $21.41, well above <strong>Friday</strong>&rsquo;s $17.15 low</li>
         <li>Tip % falls as tables grow: <strong>solo diners</strong> tip 21.7%, more than double the 14.2% at tables of 5</li>

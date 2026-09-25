@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sohith-kodavali.github.io/davproj/sitemap.xml
