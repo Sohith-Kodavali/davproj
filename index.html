@@ -1004,6 +1004,129 @@ plt.<span class="fn">show</span>()
       opacity: 0, y: 14, scale: 0.98, duration: 0.45, ease: 'power2.out',
       stagger: { each: 0.06, from: 'start' }
     });
+    document.querySelectorAll('.card[data-chart]').forEach(function(card, i) {
+      var svg = card.querySelector('.chart-slot svg');
+      if (svg) {
+        setTimeout(function() {
+          animateChart(svg, card.getAttribute('data-chart'));
+        }, 500 + i * 60);
+      }
+    });
+  }
+
+  function animateChart(svg, chartId) {
+    if (!hasGSAP || reduceMotion) return;
+    var id = parseInt(chartId);
+    if (id === 1) animateBarChart1(svg);
+    else if (id === 2) animateLineChart2(svg);
+    else if (id === 3) animateScatterChart3(svg);
+    else if (id === 4) animateDonutChart4(svg);
+    else if (id === 5) animateHistChart5(svg);
+  }
+
+  function animateBarChart1(svg) {
+    var bars = svg.querySelectorAll('rect[rx="6"]');
+    var vals = [];
+    svg.querySelectorAll('text').forEach(function(t) {
+      if (/^\$\d/.test(t.textContent) && parseFloat(t.getAttribute('y')) < 200) vals.push(t);
+    });
+    Array.from(bars).forEach(function(r, i) {
+      var x = parseFloat(r.getAttribute('x'));
+      var y = parseFloat(r.getAttribute('y'));
+      var w = parseFloat(r.getAttribute('width'));
+      var h = parseFloat(r.getAttribute('height'));
+      gsap.from(r, {
+        scaleY: 0,
+        svgOrigin: (x + w / 2) + ' ' + (y + h),
+        duration: 0.7,
+        ease: 'back.out(1.2)',
+        delay: i * 0.12
+      });
+    });
+    gsap.from(vals, { opacity: 0, y: 8, duration: 0.4, stagger: 0.1, delay: 0.4 });
+  }
+
+  function animateLineChart2(svg) {
+    var linePath = svg.querySelector('path[fill="none"][stroke="#ea580c"]');
+    var areaPath = svg.querySelector('path[fill^="url"]');
+    var circles = Array.from(svg.querySelectorAll('circle'));
+    var pctLabels = [];
+    svg.querySelectorAll('text').forEach(function(t) {
+      if (t.textContent.includes('%')) pctLabels.push(t);
+    });
+    if (linePath) {
+      var len = linePath.getTotalLength();
+      gsap.fromTo(linePath,
+        { strokeDasharray: len, strokeDashoffset: len },
+        { strokeDashoffset: 0, duration: 1, ease: 'power2.inOut' }
+      );
+    }
+    if (areaPath) gsap.from(areaPath, { opacity: 0, duration: 0.5, delay: 0.7 });
+    circles.forEach(function(c, i) {
+      gsap.from(c, {
+        scale: 0,
+        svgOrigin: c.getAttribute('cx') + ' ' + c.getAttribute('cy'),
+        duration: 0.3,
+        ease: 'back.out(2)',
+        delay: 0.15 + Math.floor(i / 2) * 0.1
+      });
+    });
+    gsap.from(pctLabels, { opacity: 0, duration: 0.3, stagger: 0.08, delay: 0.4 });
+  }
+
+  function animateScatterChart3(svg) {
+    var dots = Array.from(svg.querySelectorAll('circle'));
+    var trendLine = svg.querySelector('line[stroke-dasharray]');
+    var rLabel = null;
+    svg.querySelectorAll('text').forEach(function(t) {
+      if (t.textContent.indexOf('r =') >= 0) rLabel = t;
+    });
+    var order = dots.map(function(_, i) { return i; });
+    for (var i = order.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+    }
+    order.forEach(function(idx, seq) {
+      var c = dots[idx];
+      gsap.from(c, {
+        scale: 0,
+        svgOrigin: c.getAttribute('cx') + ' ' + c.getAttribute('cy'),
+        duration: 0.15,
+        ease: 'power2.out',
+        delay: seq * 0.005
+      });
+    });
+    if (trendLine) gsap.from(trendLine, { opacity: 0, duration: 0.5, delay: 1 });
+    if (rLabel) gsap.from(rLabel, { opacity: 0, duration: 0.4, delay: 1.2 });
+  }
+
+  function animateDonutChart4(svg) {
+    var segs = svg.querySelectorAll('path');
+    var texts = svg.querySelectorAll('text');
+    var rects = svg.querySelectorAll('rect');
+    gsap.from(segs, { scale: 0, svgOrigin: '153.6 130', duration: 0.8, stagger: 0.15, ease: 'back.out(1.5)' });
+    gsap.from(texts, { opacity: 0, y: 8, duration: 0.4, stagger: 0.06, delay: 0.5 });
+    gsap.from(rects, { opacity: 0, duration: 0.3, stagger: 0.1, delay: 0.5 });
+  }
+
+  function animateHistChart5(svg) {
+    var bars = Array.from(svg.querySelectorAll('rect')).filter(function(r) {
+      return parseFloat(r.getAttribute('width')) === 16;
+    });
+    bars.forEach(function(r, i) {
+      var h = parseFloat(r.getAttribute('height'));
+      if (h <= 0) return;
+      var x = parseFloat(r.getAttribute('x'));
+      var y = parseFloat(r.getAttribute('y'));
+      var w = parseFloat(r.getAttribute('width'));
+      gsap.from(r, {
+        scaleY: 0,
+        svgOrigin: (x + w / 2) + ' ' + (y + h),
+        duration: 0.5,
+        ease: 'back.out(1.2)',
+        delay: i * 0.04
+      });
+    });
   }
 
   var overlay = document.getElementById('overlay');
@@ -1027,7 +1150,10 @@ plt.<span class="fn">show</span>()
     var cardEl = document.querySelector('.card[data-chart="' + id + '"]');
     var svgEl = cardEl.querySelector('.chart-slot svg');
     modalChart.innerHTML = '';
-    if (svgEl) modalChart.appendChild(svgEl.cloneNode(true));
+    if (svgEl) {
+      modalChart.appendChild(svgEl.cloneNode(true));
+      setTimeout(function() { animateChart(modalChart.querySelector('svg'), id); }, 200);
+    }
     modalTitle.textContent = data.title;
     modalChip.textContent = data.chip;
     modalAnalysis.innerHTML = data.body;
