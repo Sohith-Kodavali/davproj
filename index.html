@@ -1006,25 +1006,22 @@ plt.<span class="fn">show</span>()
     });
     document.querySelectorAll('.card[data-chart]').forEach(function(card, i) {
       var svg = card.querySelector('.chart-slot svg');
-      if (svg) {
-        setTimeout(function() {
-          animateChart(svg, card.getAttribute('data-chart'));
-        }, 500 + i * 60);
-      }
+      if (svg) animateChart(svg, card.getAttribute('data-chart'), 0.5 + i * 0.08);
     });
   }
 
-  function animateChart(svg, chartId) {
+  function animateChart(svg, chartId, baseDelay) {
     if (!hasGSAP || reduceMotion) return;
+    var d = baseDelay || 0;
     var id = parseInt(chartId);
-    if (id === 1) animateBarChart1(svg);
-    else if (id === 2) animateLineChart2(svg);
-    else if (id === 3) animateScatterChart3(svg);
-    else if (id === 4) animateDonutChart4(svg);
-    else if (id === 5) animateHistChart5(svg);
+    if (id === 1) animateBarChart1(svg, d);
+    else if (id === 2) animateLineChart2(svg, d);
+    else if (id === 3) animateScatterChart3(svg, d);
+    else if (id === 4) animateDonutChart4(svg, d);
+    else if (id === 5) animateHistChart5(svg, d);
   }
 
-  function animateBarChart1(svg) {
+  function animateBarChart1(svg, d) {
     var bars = svg.querySelectorAll('rect[rx="6"]');
     var vals = [];
     svg.querySelectorAll('text').forEach(function(t) {
@@ -1038,15 +1035,15 @@ plt.<span class="fn">show</span>()
       gsap.from(r, {
         scaleY: 0,
         svgOrigin: (x + w / 2) + ' ' + (y + h),
-        duration: 0.7,
+        duration: 1.2,
         ease: 'back.out(1.2)',
-        delay: i * 0.12
+        delay: d + i * 0.2
       });
     });
-    gsap.from(vals, { opacity: 0, y: 8, duration: 0.4, stagger: 0.1, delay: 0.4 });
+    gsap.from(vals, { opacity: 0, y: 8, duration: 0.5, stagger: 0.12, delay: d + 0.8 });
   }
 
-  function animateLineChart2(svg) {
+  function animateLineChart2(svg, d) {
     var linePath = svg.querySelector('path[fill="none"][stroke="#ea580c"]');
     var areaPath = svg.querySelector('path[fill^="url"]');
     var circles = Array.from(svg.querySelectorAll('circle'));
@@ -1058,23 +1055,23 @@ plt.<span class="fn">show</span>()
       var len = linePath.getTotalLength();
       gsap.fromTo(linePath,
         { strokeDasharray: len, strokeDashoffset: len },
-        { strokeDashoffset: 0, duration: 1, ease: 'power2.inOut' }
+        { strokeDashoffset: 0, duration: 1.8, ease: 'power2.inOut', delay: d, immediateRender: true }
       );
     }
-    if (areaPath) gsap.from(areaPath, { opacity: 0, duration: 0.5, delay: 0.7 });
+    if (areaPath) gsap.from(areaPath, { opacity: 0, duration: 0.8, delay: d + 1.2 });
     circles.forEach(function(c, i) {
       gsap.from(c, {
         scale: 0,
         svgOrigin: c.getAttribute('cx') + ' ' + c.getAttribute('cy'),
-        duration: 0.3,
+        duration: 0.5,
         ease: 'back.out(2)',
-        delay: 0.15 + Math.floor(i / 2) * 0.1
+        delay: d + 0.3 + Math.floor(i / 2) * 0.18
       });
     });
-    gsap.from(pctLabels, { opacity: 0, duration: 0.3, stagger: 0.08, delay: 0.4 });
+    gsap.from(pctLabels, { opacity: 0, duration: 0.4, stagger: 0.12, delay: d + 0.6 });
   }
 
-  function animateScatterChart3(svg) {
+  function animateScatterChart3(svg, d) {
     var dots = Array.from(svg.querySelectorAll('circle'));
     var trendLine = svg.querySelector('line[stroke-dasharray]');
     var rLabel = null;
@@ -1091,25 +1088,25 @@ plt.<span class="fn">show</span>()
       gsap.from(c, {
         scale: 0,
         svgOrigin: c.getAttribute('cx') + ' ' + c.getAttribute('cy'),
-        duration: 0.15,
+        duration: 0.2,
         ease: 'power2.out',
-        delay: seq * 0.005
+        delay: d + seq * 0.008
       });
     });
-    if (trendLine) gsap.from(trendLine, { opacity: 0, duration: 0.5, delay: 1 });
-    if (rLabel) gsap.from(rLabel, { opacity: 0, duration: 0.4, delay: 1.2 });
+    if (trendLine) gsap.from(trendLine, { opacity: 0, duration: 0.6, delay: d + 1.5 });
+    if (rLabel) gsap.from(rLabel, { opacity: 0, duration: 0.5, delay: d + 1.8 });
   }
 
-  function animateDonutChart4(svg) {
+  function animateDonutChart4(svg, d) {
     var segs = svg.querySelectorAll('path');
     var texts = svg.querySelectorAll('text');
     var rects = svg.querySelectorAll('rect');
-    gsap.from(segs, { scale: 0, svgOrigin: '153.6 130', duration: 0.8, stagger: 0.15, ease: 'back.out(1.5)' });
-    gsap.from(texts, { opacity: 0, y: 8, duration: 0.4, stagger: 0.06, delay: 0.5 });
-    gsap.from(rects, { opacity: 0, duration: 0.3, stagger: 0.1, delay: 0.5 });
+    gsap.from(segs, { scale: 0, svgOrigin: '153.6 130', duration: 1.2, stagger: 0.25, ease: 'back.out(1.5)', delay: d });
+    gsap.from(texts, { opacity: 0, y: 8, duration: 0.5, stagger: 0.08, delay: d + 0.8 });
+    gsap.from(rects, { opacity: 0, duration: 0.4, stagger: 0.12, delay: d + 0.8 });
   }
 
-  function animateHistChart5(svg) {
+  function animateHistChart5(svg, d) {
     var bars = Array.from(svg.querySelectorAll('rect')).filter(function(r) {
       return parseFloat(r.getAttribute('width')) === 16;
     });
@@ -1122,9 +1119,9 @@ plt.<span class="fn">show</span>()
       gsap.from(r, {
         scaleY: 0,
         svgOrigin: (x + w / 2) + ' ' + (y + h),
-        duration: 0.5,
+        duration: 0.9,
         ease: 'back.out(1.2)',
-        delay: i * 0.04
+        delay: d + i * 0.07
       });
     });
   }
@@ -1152,7 +1149,7 @@ plt.<span class="fn">show</span>()
     modalChart.innerHTML = '';
     if (svgEl) {
       modalChart.appendChild(svgEl.cloneNode(true));
-      setTimeout(function() { animateChart(modalChart.querySelector('svg'), id); }, 200);
+      animateChart(modalChart.querySelector('svg'), id, 0.15);
     }
     modalTitle.textContent = data.title;
     modalChip.textContent = data.chip;
