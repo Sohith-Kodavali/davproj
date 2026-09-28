@@ -935,14 +935,16 @@ plt.<span class="fn">title</span>(<span class="str">'Order Distribution by Gende
 plt.<span class="fn">show</span>()
 
 <span class="cm"># 5. Tip % Distribution by Smoker Status</span>
-plt.<span class="fn">figure</span>(figsize<span class="op">=</span>(<span class="num">8</span>, <span class="num">5</span>))
-<span class="kw">for</span> label, group <span class="kw">in</span> tips.<span class="fn">groupby</span>(<span class="str">'smoker'</span>):
-    plt.<span class="fn">hist</span>(group[<span class="str">'tip_pct'</span>], bins<span class="op">=</span><span class="num">15</span>, alpha<span class="op">=</span><span class="num">0.6</span>,
-            label<span class="op">=</span>label,
-            color<span class="op">=</span><span class="str">'#2563eb'</span> <span class="kw">if</span> label <span class="op">==</span> <span class="str">'No'</span> <span class="kw">else</span> <span class="str">'#ea580c'</span>)
+tips[<span class="str">'tip_pct'</span>] <span class="op">=</span> (tips[<span class="str">'tip'</span>] <span class="op">/</span> tips[<span class="str">'total_bill'</span>]) <span class="op">*</span> <span class="num">100</span>
+bins <span class="op">=</span> [<span class="num">0</span>, <span class="num">5</span>, <span class="num">10</span>, <span class="num">15</span>, <span class="num">20</span>, <span class="num">25</span>, <span class="num">30</span>, <span class="num">100</span>]
+labels <span class="op">=</span> [<span class="str">'0-5'</span>, <span class="str">'5-10'</span>, <span class="str">'10-15'</span>, <span class="str">'15-20'</span>, <span class="str">'20-25'</span>, <span class="str">'25-30'</span>, <span class="str">'30+'</span>]
+tips[<span class="str">'tip_bin'</span>] <span class="op">=</span> pd.<span class="fn">cut</span>(tips[<span class="str">'tip_pct'</span>], bins<span class="op">=</span>bins, labels<span class="op">=</span>labels)
+grouped <span class="op">=</span> tips.<span class="fn">groupby</span>([<span class="str">'tip_bin'</span>, <span class="str">'smoker'</span>]).<span class="fn">size</span>().<span class="fn">unstack</span>(fill_value<span class="op">=</span><span class="num">0</span>)
+grouped.<span class="fn">plot</span>(kind<span class="op">=</span><span class="str">'bar'</span>, color<span class="op">=</span>[<span class="str">'#2563eb'</span>, <span class="str">'#ea580c'</span>],
+            width<span class="op">=</span><span class="num">0.8</span>, figsize<span class="op">=</span>(<span class="num">8</span>, <span class="num">5</span>))
 plt.<span class="fn">xlabel</span>(<span class="str">'Tip % of Bill'</span>)
 plt.<span class="fn">ylabel</span>(<span class="str">'Frequency'</span>)
-plt.<span class="fn">legend</span>(title<span class="op">=</span><span class="str">'Smoker'</span>)
+plt.<span class="fn">legend</span>([<span class="str">'Non-smoker'</span>, <span class="str">'Smoker'</span>], title<span class="op">=</span><span class="str">'Smoker'</span>)
 plt.<span class="fn">title</span>(<span class="str">'Tip % Distribution by Smoker Status'</span>)
 plt.<span class="fn">show</span>()
 </code></pre>
