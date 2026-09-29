@@ -281,6 +281,13 @@
     margin-top: 0.6vh;
     border-top: 1px solid rgba(255,255,255,0.08);
     padding-top: 0.5vh;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+  }
+  .sample-data:hover, .sample-data:focus-visible {
+    background: rgba(255,255,255,0.05);
+    outline: none;
   }
   .data-table {
     width: 100%;
@@ -872,7 +879,8 @@
         <li class="team-item"><span class="team-roll">125AD0043</span><span class="team-graph">Graph 5 &mdash; Smoker Status</span></li>
         <li class="team-item"><span class="team-roll">125AD0059</span><span class="team-graph">Graph 1 &mdash; Avg Bill by Day</span></li>
       </ul>
-      <div class="sample-data">
+      <div class="sample-data" id="sd-trigger" role="button" tabindex="0"
+            aria-haspopup="dialog" aria-label="View 10-row sample data">
         <table class="data-table">
           <thead><tr><th>total_bill</th><th>tip</th><th>sex</th><th>smoker</th><th>day</th><th>time</th><th>size</th></tr></thead>
           <tbody>
@@ -881,7 +889,7 @@
             <tr><td>21.01</td><td>3.50</td><td>Male</td><td>No</td><td>Sun</td><td>Dinner</td><td>3</td></tr>
           </tbody>
         </table>
-        <span class="data-note">n = 244 records &middot; 7 columns</span>
+        <span class="data-note">n = 244 records &middot; 7 columns &middot; click for 10-row sample</span>
       </div>
     </section>
   </main>
@@ -935,6 +943,32 @@
         <tr><td>size</td><td>integer</td><td>Number of people in the dining party</td></tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Sample Data modal -->
+<div class="ds-overlay" id="sd-overlay">
+  <div class="ds-modal" role="dialog" aria-modal="true" aria-labelledby="sd-title">
+    <button class="ds-modal-close" id="sd-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>
+    </button>
+    <h3 id="sd-title">Sample Data &mdash; 10 of 244 rows</h3>
+    <table class="ds-table">
+      <thead><tr><th>total_bill</th><th>tip</th><th>sex</th><th>smoker</th><th>day</th><th>time</th><th>size</th></tr></thead>
+      <tbody>
+        <tr><td>16.99</td><td>1.01</td><td>Female</td><td>No</td><td>Sun</td><td>Dinner</td><td>2</td></tr>
+        <tr><td>10.34</td><td>1.66</td><td>Male</td><td>No</td><td>Sun</td><td>Dinner</td><td>3</td></tr>
+        <tr><td>21.01</td><td>3.50</td><td>Male</td><td>No</td><td>Sun</td><td>Dinner</td><td>3</td></tr>
+        <tr><td>23.68</td><td>3.31</td><td>Male</td><td>No</td><td>Sun</td><td>Dinner</td><td>2</td></tr>
+        <tr><td>24.59</td><td>3.61</td><td>Female</td><td>No</td><td>Sun</td><td>Dinner</td><td>4</td></tr>
+        <tr><td>25.29</td><td>4.71</td><td>Male</td><td>No</td><td>Sun</td><td>Dinner</td><td>4</td></tr>
+        <tr><td>8.77</td><td>2.00</td><td>Male</td><td>No</td><td>Sun</td><td>Dinner</td><td>2</td></tr>
+        <tr><td>26.88</td><td>3.12</td><td>Male</td><td>No</td><td>Sun</td><td>Dinner</td><td>4</td></tr>
+        <tr><td>15.04</td><td>1.96</td><td>Male</td><td>No</td><td>Sun</td><td>Dinner</td><td>2</td></tr>
+        <tr><td>14.78</td><td>3.23</td><td>Male</td><td>No</td><td>Sun</td><td>Dinner</td><td>2</td></tr>
+      </tbody>
+    </table>
+    <span class="data-note" style="color: var(--text-muted); margin-top: 1.5vh;">Source: Seaborn &ldquo;tips&rdquo; dataset</span>
   </div>
 </div>
 
@@ -1326,6 +1360,9 @@ plt.<span class="fn">show</span>()
     if (e.key === 'Escape' && dsOverlay.classList.contains('open')) {
       dsOverlay.classList.remove('open');
     }
+    if (e.key === 'Escape' && sdOverlay.classList.contains('open')) {
+      sdOverlay.classList.remove('open');
+    }
   });
 
   // Python Code modal
@@ -1360,6 +1397,24 @@ plt.<span class="fn">show</span>()
 
   // Show the dataset info popup automatically when the page first loads
   setTimeout(function() { dsOverlay.classList.add('open'); }, 400);
+
+  // Sample Data modal (opens from clicking the sample data table)
+  var sdTrigger = document.getElementById('sd-trigger');
+  var sdOverlay = document.getElementById('sd-overlay');
+  var sdClose = document.getElementById('sd-close');
+
+  sdTrigger.addEventListener('click', function() {
+    sdOverlay.classList.add('open');
+  });
+  sdTrigger.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sdOverlay.classList.add('open'); }
+  });
+  sdClose.addEventListener('click', function() {
+    sdOverlay.classList.remove('open');
+  });
+  sdOverlay.addEventListener('click', function(e) {
+    if (e.target === sdOverlay) sdOverlay.classList.remove('open');
+  });
 })();
 </script>
 
