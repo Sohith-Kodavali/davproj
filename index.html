@@ -335,7 +335,7 @@
   .fun-facts-btn svg { flex-shrink: 0; }
 
   /* Fun Facts overlay */
-  .ff-overlay {
+  .ff-overlay, .ds-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.65);
@@ -349,8 +349,8 @@
     pointer-events: none;
     transition: opacity 0.3s ease;
   }
-  .ff-overlay.open { opacity: 1; pointer-events: auto; }
-  .ff-modal {
+  .ff-overlay.open, .ds-overlay.open { opacity: 1; pointer-events: auto; }
+  .ff-modal, .ds-modal {
     width: min(680px, 90vw);
     max-height: 88vh;
     overflow: auto;
@@ -364,8 +364,8 @@
     opacity: 0;
     transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease;
   }
-  .ff-overlay.open .ff-modal { transform: scale(1) translateY(0); opacity: 1; }
-  .ff-modal-close {
+  .ff-overlay.open .ff-modal, .ds-overlay.open .ds-modal { transform: scale(1) translateY(0); opacity: 1; }
+  .ff-modal-close, .ds-modal-close {
     position: absolute;
     top: 1.2vh;
     right: 1.2vw;
@@ -381,8 +381,8 @@
     cursor: pointer;
     transition: background 0.15s ease;
   }
-  .ff-modal-close:hover { background: rgba(0,0,0,0.08); }
-  .ff-modal h3 {
+  .ff-modal-close:hover, .ds-modal-close:hover { background: rgba(0,0,0,0.08); }
+  .ff-modal h3, .ds-modal h3 {
     font-family: var(--font-display);
     font-size: clamp(20px, 1.8vw, 28px);
     font-weight: 600;
@@ -390,6 +390,71 @@
     margin-bottom: 2.5vh;
     padding-right: 48px;
   }
+  .ds-intro {
+    font-size: clamp(13px, 0.95vw, 16px);
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .ds-intro strong { color: var(--text-primary); font-weight: 600; }
+  .ds-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2vh;
+    font-size: clamp(12px, 0.85vw, 14px);
+  }
+  .ds-table th {
+    text-align: left;
+    padding: 8px 10px;
+    background: var(--bg-warm);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+  .ds-table th:first-child { border-radius: 8px 0 0 8px; }
+  .ds-table th:last-child { border-radius: 0 8px 8px 0; }
+  .ds-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .ds-table td:first-child {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+  .ds-table tr:last-child td { border-bottom: none; }
+
+  /* ---------- Dataset Info button ---------- */
+  .ds-info-btn {
+    position: fixed;
+    top: 1.5vh;
+    right: 1.5vw;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px;
+    padding: 10px 22px 10px 16px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: clamp(12px, 0.85vw, 15px);
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 50;
+  }
+  .ds-info-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+  .ds-info-btn svg { flex-shrink: 0; }
   .ff-list {
     list-style: none;
     display: flex;
@@ -715,7 +780,7 @@
     .modal { padding: 20px 16px; border-radius: 16px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .card, .overlay, .modal, .card-arrow { transition: none !important; }
+    .card, .overlay, .modal, .card-arrow, .ff-overlay, .ff-modal, .ds-overlay, .ds-modal { transition: none !important; }
   }
 </style>
 </head>
@@ -824,6 +889,52 @@
   <div class="page-foot">
     <span>Source: Seaborn &ldquo;tips&rdquo; dataset &middot; n = 244</span>
     <span>Data Analysis &amp; Visualization &middot; Group Project</span>
+  </div>
+</div>
+
+<!-- Dataset Info button -->
+<button class="ds-info-btn" id="ds-btn" aria-label="Show dataset info">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+  Dataset Info
+</button>
+
+<!-- Dataset Info modal -->
+<div class="ds-overlay" id="ds-overlay">
+  <div class="ds-modal" role="dialog" aria-modal="true" aria-labelledby="ds-title">
+    <button class="ds-modal-close" id="ds-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>
+    </button>
+    <h3 id="ds-title">About This Dataset</h3>
+    <p class="ds-intro">This analysis uses the Seaborn &ldquo;<strong>tips</strong>&rdquo; dataset &mdash; real restaurant tipping records logged by a food server over several weeks, capturing each table&rsquo;s bill, tip and party details. It&rsquo;s a widely used practice dataset for exploring correlations and categorical comparisons.</p>
+    <div class="stat-row" style="margin-top: 1.8vh;">
+      <div class="stat-tile">
+        <span class="stat-tile-label">Records</span>
+        <span class="stat-tile-value">244</span>
+        <span class="stat-tile-sub">restaurant transactions</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-tile-label">Columns</span>
+        <span class="stat-tile-value">7</span>
+        <span class="stat-tile-sub">3 numeric &middot; 4 categorical</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-tile-label">Source</span>
+        <span class="stat-tile-value" style="font-size:clamp(14px,1vw,18px);">Seaborn</span>
+        <span class="stat-tile-sub">built-in &ldquo;tips&rdquo; dataset</span>
+      </div>
+    </div>
+    <table class="ds-table">
+      <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>total_bill</td><td>float</td><td>Total bill amount in USD (food + drinks), before tip</td></tr>
+        <tr><td>tip</td><td>float</td><td>Tip amount in USD left by the customer</td></tr>
+        <tr><td>sex</td><td>category</td><td>Gender of the person who paid &mdash; Male or Female</td></tr>
+        <tr><td>smoker</td><td>category</td><td>Whether the party included a smoker &mdash; Yes or No</td></tr>
+        <tr><td>day</td><td>category</td><td>Day of the week the bill was recorded &mdash; Thur, Fri, Sat or Sun</td></tr>
+        <tr><td>time</td><td>category</td><td>Meal period &mdash; Lunch or Dinner</td></tr>
+        <tr><td>size</td><td>integer</td><td>Number of people in the dining party</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -1212,6 +1323,9 @@ plt.<span class="fn">show</span>()
     if (e.key === 'Escape' && pyOverlay.classList.contains('open')) {
       pyOverlay.classList.remove('open');
     }
+    if (e.key === 'Escape' && dsOverlay.classList.contains('open')) {
+      dsOverlay.classList.remove('open');
+    }
   });
 
   // Python Code modal
@@ -1228,6 +1342,24 @@ plt.<span class="fn">show</span>()
   pyOverlay.addEventListener('click', function(e) {
     if (e.target === pyOverlay) pyOverlay.classList.remove('open');
   });
+
+  // Dataset Info modal
+  var dsBtn = document.getElementById('ds-btn');
+  var dsOverlay = document.getElementById('ds-overlay');
+  var dsClose = document.getElementById('ds-close');
+
+  dsBtn.addEventListener('click', function() {
+    dsOverlay.classList.add('open');
+  });
+  dsClose.addEventListener('click', function() {
+    dsOverlay.classList.remove('open');
+  });
+  dsOverlay.addEventListener('click', function(e) {
+    if (e.target === dsOverlay) dsOverlay.classList.remove('open');
+  });
+
+  // Show the dataset info popup automatically when the page first loads
+  setTimeout(function() { dsOverlay.classList.add('open'); }, 400);
 })();
 </script>
 
